@@ -10,10 +10,10 @@ namespace ElevatorSimulation
     {
         int CurrentFloor { get; set; }
         ElevatorDirection Direction { get; set; }
-        int PassengersCount { get; set; }
-        int WeightLimit { get; set; }
-
-        void Move(int targetFloor);
+        int PassengersCount { get;  }
+        int WeightLimit { get;  }
+        ElevatorType ElevatorType { get; }
+        Task MoveAsync(int targetFloor);
         void DisplayStatus();
         void PickupPassengers(int passengerCount);
         void DropOffPassengers(int passengerCount);

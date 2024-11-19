@@ -1,73 +1,56 @@
-﻿using ElevatorSimulation;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-public class ElevatorController
+namespace ElevatorSimulation
 {
-    private List<IElevator> elevators;
-    private Dictionary<int, Queue<int>> floorRequests;
-
-    public ElevatorController(List<IElevator> elevators)
+    public class ElevatorController
     {
-        this.elevators = elevators;
-        floorRequests = new Dictionary<int, Queue<int>>();
-        for (int i = 0; i < Constants.MaxFloors; i++)
-        {
-            floorRequests[i] = new Queue<int>();
-        }
-    }
+        private List<IElevator> elevators;
 
-    public void RequestElevator(int requestedFloor, int passengerCount, ElevatorType elevatorType)
-    {
-        var closestElevator = elevators
-            .Where(e => e.GetType().Name.Contains(elevatorType.ToString()) && e.CanCarryPassengers(passengerCount))
-            .OrderBy(e => Math.Abs(e.CurrentFloor - requestedFloor))
-            .FirstOrDefault();
+        public ElevatorController(List<IElevator> elevators)
+        {
+            this.elevators = elevators;
+        }
 
-        if (closestElevator != null)
+        // Requests an elevator to pick up passengers at a specified floor and move them to a target floor
+        public async Task RequestElevatorAsync(int requestedFloor, int targetFloor, int passengerCount, ElevatorType elevatorType)
         {
-            closestElevator.Move(requestedFloor);
-            closestElevator.PickupPassengers(passengerCount);
-            Console.WriteLine($"Elevator {closestElevator.GetType().Name} moving to floor {requestedFloor} with {passengerCount} passengers.");
-        }
-        else
-        {
-            Console.WriteLine("No elevator available for this request.");
-        }
-    }
+            var availableElevators = elevators
+                .Where(e => e.ElevatorType == elevatorType && e.CanCarryPassengers(passengerCount))
+                .OrderBy(e => Math.Abs(e.CurrentFloor - requestedFloor))
+                .ToList();
 
-    public void AddFloorRequest(int floor, int passengerCount)
-    {
-        if (floor >= 0 && floor < Constants.MaxFloors)
-        {
-            floorRequests[floor].Enqueue(passengerCount);
-            Console.WriteLine($"Request added for floor {floor} with {passengerCount} passengers.");
-        }
-        else
-        {
-            Console.WriteLine("Invalid floor request.");
-        }
-    }
-
-    public void DispatchElevators()
-    {
-        foreach (var floorRequest in floorRequests)
-        {
-            if (floorRequest.Value.Count > 0)
+            if (availableElevators.Any())
             {
-                Console.WriteLine($"Floor {floorRequest.Key} has {floorRequest.Value.Count} pending requests.");
-                foreach (var passengers in floorRequest.Value)
-                {
-                    RequestElevator(floorRequest.Key, passengers, ElevatorType.Passenger);  // Default to Passenger for now
-                }
+                var closestElevator = availableElevators.First();
+                Console.WriteLine($"Elevator {elevatorType} found. Moving to pick up at floor {requestedFloor}...");
+                await closestElevator.MoveAsync(requestedFloor);
+                closestElevator.PickupPassengers(passengerCount);
+                await closestElevator.MoveAsync(targetFloor);
+                closestElevator.DropOffPassengers(passengerCount);
+            }
+            else
+            {
+                Console.WriteLine("No elevators available for this request.");
             }
         }
-    }
 
-    public void DisplayElevatorStatuses()
-    {
-        foreach (var elevator in elevators)
+        // Adds a request for an elevator without immediately moving passengers
+        public void AddFloorRequest(int floor, int passengerCount, ElevatorType elevatorType)
         {
-            elevator.DisplayStatus();
-            elevator.DisplayElevatorDetails();
+            Console.WriteLine($"Request added for elevator type {elevatorType} to pick up passengers at floor {floor}.");
+        }
+
+        // Display current elevator statuses
+        public async Task DisplayElevatorStatusesAsync()
+        {
+            Console.WriteLine("\nElevator Statuses:");
+            foreach (var elevator in elevators)
+            {
+                elevator.DisplayStatus();
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ namespace ElevatorSimulation
         Passenger,
         Freight,
         HighSpeed,
-        Glass
+        Glass,
+        None
     }
 }
