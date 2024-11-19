@@ -10,5 +10,6 @@ namespace ElevatorSimulation
     {
         public const int MaxPassengers = 10;
         public const int WeightLimit = 1500; // In kilograms
+        public const int MaxFloors = 20;
     }
 }
