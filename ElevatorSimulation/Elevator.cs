@@ -58,7 +58,7 @@ namespace ElevatorSimulation
             return PassengersCount + passengerCount <= Constants.MaxPassengers && totalWeight <= WeightLimit;
         }
 
-        public void PickupPassengers(int passengerCount)
+        public Task PickupPassengers(int passengerCount)
         {
             if (CanCarryPassengers(passengerCount))
             {
@@ -69,19 +69,22 @@ namespace ElevatorSimulation
             {
                 Console.WriteLine("Cannot pick up passengers: Exceeds weight limit or capacity.");
             }
+            return Task.CompletedTask;  // Return a completed task as we're not actually performing async operations
         }
 
-        public void DropOffPassengers(int passengerCount)
+        public Task DropOffPassengers(int passengerCount)
         {
             if (passengerCount > PassengersCount)
             {
                 Console.WriteLine("Error: Attempting to drop off more passengers than currently onboard.");
-                return;
+                return Task.CompletedTask;  // Return a completed task as an early exit
             }
 
             PassengersCount -= passengerCount;
             Console.WriteLine($"{passengerCount} passengers dropped off. Remaining: {PassengersCount}");
+            return Task.CompletedTask;  // Return a completed task after performing the operation
         }
+
 
         public void DisplayStatus()
         {

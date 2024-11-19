@@ -25,17 +25,20 @@ namespace ElevatorSimulation
             if (availableElevators.Any())
             {
                 var closestElevator = availableElevators.First();
-                Console.WriteLine($"Elevator {elevatorType} found. Moving to pick up at floor {requestedFloor}...");
-                await closestElevator.MoveAsync(requestedFloor);
-                closestElevator.PickupPassengers(passengerCount);
-                await closestElevator.MoveAsync(targetFloor);
-                closestElevator.DropOffPassengers(passengerCount);
+                Console.WriteLine($"Selected Elevator: {closestElevator.ElevatorType} at floor {closestElevator.CurrentFloor}");
+
+                await closestElevator.MoveAsync(requestedFloor);  // Should be called here
+                await closestElevator.PickupPassengers(passengerCount);
+                await closestElevator.MoveAsync(targetFloor);  // Should be called here
+                await closestElevator.DropOffPassengers(passengerCount);
             }
             else
             {
                 Console.WriteLine("No elevators available for this request.");
             }
         }
+
+
 
         // Adds a request for an elevator without immediately moving passengers
         public void AddFloorRequest(int floor, int passengerCount, ElevatorType elevatorType)

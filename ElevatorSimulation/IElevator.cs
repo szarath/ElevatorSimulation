@@ -15,8 +15,8 @@ namespace ElevatorSimulation
         ElevatorType ElevatorType { get; }
         Task MoveAsync(int targetFloor);
         void DisplayStatus();
-        void PickupPassengers(int passengerCount);
-        void DropOffPassengers(int passengerCount);
+        Task PickupPassengers(int passengerCount);
+        Task DropOffPassengers(int passengerCount);
         bool CanCarryPassengers(int passengerCount);
         void DisplayElevatorDetails();
     }
