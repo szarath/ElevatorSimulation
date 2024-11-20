@@ -1,0 +1,37 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+
+    strategy:
+      matrix:
+        # You can test on multiple versions of .NET here
+        dotnet-version: ['6.0']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3  # Checkout the code from the repository
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ matrix.dotnet-version }}  # Use the matrix-defined .NET version
+
+    - name: Restore dependencies
+      run: dotnet restore  # Restore the dependencies for the project
+
+    - name: Build project
+      run: dotnet build --configuration Release  # Build the project
+
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build  # Run tests after build
