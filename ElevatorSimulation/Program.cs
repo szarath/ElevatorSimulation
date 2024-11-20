@@ -21,7 +21,8 @@ namespace ElevatorSimulation
                 Console.WriteLine("\nElevator Control Panel");
                 Console.WriteLine("1. Request Elevator to Transport Passengers");
                 Console.WriteLine("2. Add Floor Request (without immediate movement)");
-                Console.WriteLine("3. Exit");
+                Console.WriteLine("3. Process All Queued Requests");
+                Console.WriteLine("4. Exit");
                 Console.Write("Enter your choice: ");
 
                 string choice = Console.ReadLine();
@@ -34,7 +35,10 @@ namespace ElevatorSimulation
                         HandleFloorRequest(controller);
                         break;
                     case "3":
-                        isRunning = false; // Exit the loop
+                        await ProcessQueuedRequestsAsync(controller);
+                        break;
+                    case "4":
+                        isRunning = false;
                         break;
                     default:
                         Console.WriteLine("Invalid choice. Press Enter to try again.");
@@ -93,7 +97,14 @@ namespace ElevatorSimulation
 
             Console.Clear();
             Console.WriteLine("Floor request added successfully.");
-            controller.DisplayElevatorStatusesAsync().Wait();
+        }
+
+        private static async Task ProcessQueuedRequestsAsync(ElevatorController controller)
+        {
+            Console.Clear();
+            await controller.ProcessQueuedRequestsAsync();
+            Console.WriteLine("\nPress Enter to return to the menu...");
+            Console.ReadLine();
         }
 
         private static async Task<ElevatorType> ChooseElevatorTypeAsync()

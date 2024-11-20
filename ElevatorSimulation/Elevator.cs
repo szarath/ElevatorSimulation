@@ -17,10 +17,9 @@ namespace ElevatorSimulation
             WeightLimit = weightLimit;
         }
 
-        // Asynchronous method to simulate elevator movement
         public virtual async Task MoveAsync(int targetFloor)
         {
-            if (targetFloor < 1 || targetFloor > Constants.MaxFloors)
+            if (targetFloor < 0 || targetFloor >= Constants.MaxFloors)
             {
                 Console.WriteLine("Invalid floor. Please choose a floor within the valid range.");
                 return;
@@ -35,28 +34,54 @@ namespace ElevatorSimulation
             Direction = targetFloor > CurrentFloor ? ElevatorDirection.Up : ElevatorDirection.Down;
             Console.WriteLine($"Elevator starting to move {Direction} to floor {targetFloor}...");
 
-            // Simulate elevator moving with delay
             while (CurrentFloor != targetFloor)
             {
-                await Task.Delay(500); // Asynchronous delay for floor transition
+                await Task.Delay(500);
                 CurrentFloor += (Direction == ElevatorDirection.Up ? 1 : -1);
                 Console.WriteLine($"Elevator at floor {CurrentFloor}...");
             }
 
             Direction = ElevatorDirection.Idle;
             Console.WriteLine($"Elevator has reached floor {targetFloor} and is now stationary.");
-
-            // Drop off passengers when the elevator reaches the target floor
-            DropOffPassengers(PassengersCount);
         }
 
-        public abstract void DisplayElevatorDetails();
+        public async Task HandleTransportAsync(int requestedFloor, int targetFloor, int passengerCount)
+        {
+            Console.WriteLine("\nMoving to requested floor...");
+            await MoveAsync(requestedFloor);
+
+            if (passengerCount > 0)
+            {
+                Console.WriteLine("\nPicking up passengers...");
+                await PickupPassengers(passengerCount);
+            }
+
+            if (targetFloor != requestedFloor)
+            {
+                Console.WriteLine("\nMoving to target floor...");
+                await MoveAsync(targetFloor);
+            }
+
+            if (PassengersCount > 0)
+            {
+                Console.WriteLine("\nDropping off passengers...");
+                await DropOffPassengers(passengerCount);
+            }
+            else
+            {
+                Console.WriteLine("\nNo passengers onboard to drop off.");
+            }
+
+            Console.WriteLine("\nElevator operation completed.");
+        }
+
 
         public bool CanCarryPassengers(int passengerCount)
         {
             int totalWeight = (PassengersCount + passengerCount) * PassengerWeight;
-            return PassengersCount + passengerCount <= Constants.MaxPassengers && totalWeight <= WeightLimit;
+            return (PassengersCount + passengerCount) <= Constants.MaxPassengers && totalWeight <= WeightLimit;
         }
+
 
         public Task PickupPassengers(int passengerCount)
         {
@@ -69,7 +94,7 @@ namespace ElevatorSimulation
             {
                 Console.WriteLine("Cannot pick up passengers: Exceeds weight limit or capacity.");
             }
-            return Task.CompletedTask;  // Return a completed task as we're not actually performing async operations
+            return Task.CompletedTask;
         }
 
         public Task DropOffPassengers(int passengerCount)
@@ -77,14 +102,13 @@ namespace ElevatorSimulation
             if (passengerCount > PassengersCount)
             {
                 Console.WriteLine("Error: Attempting to drop off more passengers than currently onboard.");
-                return Task.CompletedTask;  // Return a completed task as an early exit
+                return Task.CompletedTask;
             }
 
             PassengersCount -= passengerCount;
             Console.WriteLine($"{passengerCount} passengers dropped off. Remaining: {PassengersCount}");
-            return Task.CompletedTask;  // Return a completed task after performing the operation
+            return Task.CompletedTask;
         }
-
 
         public void DisplayStatus()
         {
@@ -93,5 +117,6 @@ namespace ElevatorSimulation
             Console.WriteLine($"Elevator Type: {ElevatorType}, Floor: {CurrentFloor}, Direction: {Direction}, Passengers: {PassengersCount}/{Constants.MaxPassengers}, Weight: {totalWeight} kg ({weightStatus}), Max Capacity: {WeightLimit} kg");
         }
 
+        public abstract void DisplayElevatorDetails();
     }
 }

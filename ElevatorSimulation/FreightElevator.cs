@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ElevatorSimulation
@@ -14,22 +15,16 @@ namespace ElevatorSimulation
 
         public override ElevatorType ElevatorType => ElevatorType.Freight;
 
-        // Overriding MoveAsync method from the base class
         public override async Task MoveAsync(int targetFloor)
         {
             Console.WriteLine("Freight elevator moving...");
             Direction = targetFloor > CurrentFloor ? ElevatorDirection.Up : ElevatorDirection.Down;
 
-            // Add the requested floor to the list of stops
-            requestedStops.Enqueue(targetFloor);
+            requestedStops.Enqueue(targetFloor); // Add target floor to requested stops
 
-            // Simulate movement
             while (requestedStops.Count > 0)
             {
-                // Get the next requested stop
                 int stopFloor = requestedStops.Peek();
-
-                // Move towards the target floor
                 while (CurrentFloor != stopFloor)
                 {
                     await Task.Delay(600); // Simulate slower movement for freight elevators
@@ -37,12 +32,9 @@ namespace ElevatorSimulation
                     Console.WriteLine($"Freight elevator at floor {CurrentFloor}...");
                 }
 
-                // At the stop floor
                 Console.WriteLine($"Freight elevator reached floor {CurrentFloor}.");
-                requestedStops.Dequeue(); // Remove the current stop from the queue
-
-                // Drop off passengers at the target floor if any
-                DropOffPassengers(PassengersCount); // Drop all passengers at the current floor
+                requestedStops.Dequeue(); // Remove stop from queue
+                await DropOffPassengers(PassengersCount); // Drop all passengers
             }
 
             Direction = ElevatorDirection.Idle;

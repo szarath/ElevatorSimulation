@@ -9,13 +9,11 @@ namespace ElevatorSimulation
 
         public override ElevatorType ElevatorType => ElevatorType.Passenger;
 
-        // Overriding MoveAsync method from the base class
         public override async Task MoveAsync(int targetFloor)
         {
             Console.WriteLine("Passenger elevator moving...");
             Direction = targetFloor > CurrentFloor ? ElevatorDirection.Up : ElevatorDirection.Down;
 
-            // Simulate movement
             while (CurrentFloor != targetFloor)
             {
                 await Task.Delay(400); // Simulate time delay between floors
@@ -25,9 +23,6 @@ namespace ElevatorSimulation
 
             Direction = ElevatorDirection.Idle;
             Console.WriteLine($"Passenger elevator reached floor {CurrentFloor}.");
-
-            // Drop off passengers at the target floor
-            DropOffPassengers(PassengersCount);
         }
 
         public override void DisplayElevatorDetails()

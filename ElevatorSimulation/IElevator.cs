@@ -19,6 +19,7 @@ namespace ElevatorSimulation
         Task DropOffPassengers(int passengerCount);
         bool CanCarryPassengers(int passengerCount);
         void DisplayElevatorDetails();
+        Task HandleTransportAsync(int requestedFloor, int targetFloor, int passengerCount);
     }
 
 }
