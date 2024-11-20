@@ -8,6 +8,7 @@
 - **Request Elevators**: Passengers can request elevators, and the system will move the selected elevator to the requested floor.
 - **Closest Elevator Selection**: When multiple elevators are available, the system chooses the closest elevator based on the current position relative to the requested floor.
 - **Elevator Capacity**: Supports managing passenger and freight elevators, ensuring that each elevator can carry a specific number of passengers.
+- **Queue and Process Requests**: You can add floor requests without immediate movement. The system will queue them, and then process all requests at once, ensuring elevators respond to each request in sequence.
 - **Automated Testing**: The project includes a suite of unit tests to ensure functionality works as expected using **Moq** and **XUnit**.
 
 ## Technologies Used
