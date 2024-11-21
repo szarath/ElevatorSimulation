@@ -14,36 +14,44 @@ namespace ElevatorSimulation
 
             while (isRunning)
             {
-                Console.Clear();
-                await controller.DisplayElevatorStatusesAsync();
-
-                // Show the menu options
-                Console.WriteLine("\nElevator Control Panel");
-                Console.WriteLine("1. Request Elevator to Transport Passengers");
-                Console.WriteLine("2. Add Floor Request (without immediate movement)");
-                Console.WriteLine("3. Process All Queued Requests");
-                Console.WriteLine("4. Exit");
-                Console.Write("Enter your choice: ");
-
-                string choice = Console.ReadLine();
-                switch (choice)
+                if (!controller.isProcessing)
                 {
-                    case "1":
-                        await HandleElevatorRequestAsync(controller);
-                        break;
-                    case "2":
-                        HandleFloorRequest(controller);
-                        break;
-                    case "3":
-                        await ProcessQueuedRequestsAsync(controller);
-                        break;
-                    case "4":
-                        isRunning = false;
-                        break;
-                    default:
-                        Console.WriteLine("Invalid choice. Press Enter to try again.");
-                        Console.ReadLine();
-                        break;
+                    Console.Clear();
+                    await controller.DisplayElevatorStatusesAsync();
+
+                    Console.WriteLine("\nElevator Control Panel");
+                    Console.WriteLine("1. Request Elevator to Transport Passengers");
+                    Console.WriteLine("2. Add Floor Request (without immediate movement)");
+                    Console.WriteLine("3. Process All Queued Requests");
+                    Console.WriteLine("4. Exit");
+                    Console.Write("Enter your choice: ");
+
+                    string choice = Console.ReadLine();
+                    switch (choice)
+                    {
+                        case "1":
+                            await HandleElevatorRequestAsync(controller);
+                            break;
+                        case "2":
+                            await HandleFloorRequestAsync(controller);
+                            break;
+                        case "3":
+                            await ProcessQueuedRequestsAsync(controller);
+                            break;
+                        case "4":
+                            isRunning = false;
+                            break;
+                        default:
+                            Console.WriteLine("Invalid choice. Press Enter to try again.");
+                            Console.ReadLine();
+                            break;
+                    }
+                }
+                else
+                {
+                    Console.Clear();
+                    Console.WriteLine("Processing request... Please wait.");
+                    await Task.Delay(1000);
                 }
             }
 
@@ -76,20 +84,16 @@ namespace ElevatorSimulation
             if (elevatorType == ElevatorType.None) return;
 
             await controller.RequestElevatorAsync(requestedFloor, targetFloor, passengerCount, elevatorType);
-
-            Console.Clear();
-            Console.WriteLine("Elevator is moving...");
-            await controller.DisplayElevatorStatusesAsync();
         }
 
-        private static void HandleFloorRequest(ElevatorController controller)
+        private static async Task HandleFloorRequestAsync(ElevatorController controller)
         {
             Console.Clear();
             Console.WriteLine("Add Floor Request");
 
             int floor = GetValidInput("Enter the requested floor (0 to 19): ", 0, 19);
             int passengerCount = GetValidInput("Enter the number of passengers: ", 1, int.MaxValue);
-            ElevatorType elevatorType = ChooseElevatorTypeAsync().Result;
+            ElevatorType elevatorType = await ChooseElevatorTypeAsync();
 
             if (elevatorType == ElevatorType.None) return;
 
@@ -118,9 +122,14 @@ namespace ElevatorSimulation
 
             int choice = GetValidInput("Enter elevator type (1-5): ", 1, 5);
 
-            if (choice == 5) return ElevatorType.None;
-
-            return (ElevatorType)(choice - 1);
+            return choice switch
+            {
+                1 => ElevatorType.Passenger,
+                2 => ElevatorType.Freight,
+                3 => ElevatorType.HighSpeed,
+                4 => ElevatorType.Glass,
+                _ => ElevatorType.None,
+            };
         }
 
         private static int GetValidInput(string prompt, int minValue, int maxValue)
@@ -129,11 +138,13 @@ namespace ElevatorSimulation
             do
             {
                 Console.Write(prompt);
-                if (!int.TryParse(Console.ReadLine(), out value) || value < minValue || value > maxValue)
+                if (int.TryParse(Console.ReadLine(), out value) && value >= minValue && value <= maxValue)
                 {
-                    Console.WriteLine($"Please enter a valid number between {minValue} and {maxValue}.");
+                    break;
                 }
-            } while (value < minValue || value > maxValue);
+                Console.WriteLine($"Invalid input. Please enter a value between {minValue} and {maxValue}.");
+            } while (true);
+
             return value;
         }
     }
