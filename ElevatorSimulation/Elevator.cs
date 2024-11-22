@@ -54,6 +54,7 @@ namespace ElevatorSimulation
 
             Direction = ElevatorDirection.Idle;
         }
+
         public async Task HandleTransportAsync(int requestedFloor, int targetFloor, int passengerCount)
         {
             await MoveAsync(requestedFloor);
