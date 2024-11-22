@@ -10,9 +10,12 @@ namespace ElevatorSimulation
     {
         int CurrentFloor { get; set; }
         ElevatorDirection Direction { get; set; }
-        int PassengersCount { get;  }
-        int WeightLimit { get;  }
+        int PassengersCount { get; set; }
+        int WeightLimit { get; set; }
+        int TotalWeight { get; set; }
         ElevatorType ElevatorType { get; }
+        string WeightStatus { get; set; }
+        int MaxPassengers { get; }
         Task MoveAsync(int targetFloor);
         void DisplayStatus();
         Task PickupPassengers(int passengerCount);
