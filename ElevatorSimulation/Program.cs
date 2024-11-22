@@ -14,7 +14,7 @@ namespace ElevatorSimulation
 
             while (isRunning)
             {
-                if (!controller.isProcessing)
+                if (!controller.IsProcessing)
                 {
                     Console.Clear();
                     await controller.DisplayElevatorStatusesAsync();
@@ -22,7 +22,7 @@ namespace ElevatorSimulation
                     Console.WriteLine("\nElevator Control Panel");
                     Console.WriteLine("1. Request Elevator to Transport Passengers");
                     Console.WriteLine("2. Add Floor Request (without immediate movement)");
-                    Console.WriteLine("3. Process All Queued Requests");
+                    Console.WriteLine("3. Process All Queued Requests (will return elevator back to floor 0)");
                     Console.WriteLine("4. Exit");
                     Console.Write("Enter your choice: ");
 
@@ -64,8 +64,8 @@ namespace ElevatorSimulation
             {
                 new PassengerElevator { CurrentFloor = 0, Direction = ElevatorDirection.Idle },
                 new FreightElevator { CurrentFloor = 5, Direction = ElevatorDirection.Idle },
-                new HighSpeedElevator { CurrentFloor = 3, Direction = ElevatorDirection.Down },
-                new GlassElevator { CurrentFloor = 0, Direction = ElevatorDirection.Up }
+                new HighSpeedElevator { CurrentFloor = 3, Direction = ElevatorDirection.Idle },
+                new GlassElevator { CurrentFloor = 0, Direction = ElevatorDirection.Idle }
             };
 
             return new ElevatorController(elevators);
@@ -100,7 +100,6 @@ namespace ElevatorSimulation
             controller.AddFloorRequest(floor, passengerCount, elevatorType);
 
             Console.Clear();
-            Console.WriteLine("Floor request added successfully.");
         }
 
         private static async Task ProcessQueuedRequestsAsync(ElevatorController controller)

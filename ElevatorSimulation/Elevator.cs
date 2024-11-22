@@ -7,22 +7,28 @@ namespace ElevatorSimulation
     {
         public int CurrentFloor { get; set; }
         public ElevatorDirection Direction { get; set; } = ElevatorDirection.Idle;
-        public int PassengersCount { get; private set; }
-        public int WeightLimit { get; private set; }
+        public int PassengersCount { get; set; }
+        public int WeightLimit { get; set; }
         public int PassengerWeight { get; set; } = Constants.PassengerWeight;
         public abstract ElevatorType ElevatorType { get; }
+        public int TotalWeight { get; set; }
+        public string WeightStatus { get; set; }
+
+        public int MaxPassengers
+        {
+            get => (int)Math.Round((WeightLimit / (double)PassengerWeight), 0);
+        }
 
         public Elevator(int weightLimit)
         {
             WeightLimit = weightLimit;
         }
 
-        // Move Elevator to a target floor and display status updates
         public async Task MoveAsync(int targetFloor)
         {
             if (targetFloor < 0 || targetFloor >= Constants.MaxFloors)
             {
-                Console.WriteLine("Invalid floor. Please choose a floor within the valid range.");
+                Console.WriteLine($"Invalid floor. Please choose a floor between 0 and {Constants.MaxFloors - 1}.");
                 return;
             }
 
@@ -33,71 +39,60 @@ namespace ElevatorSimulation
             }
 
             Direction = targetFloor > CurrentFloor ? ElevatorDirection.Up : ElevatorDirection.Down;
-            Console.WriteLine($"Elevator starting to move {Direction} to floor {targetFloor}...");
 
             while (CurrentFloor != targetFloor)
             {
-                await Task.Delay(500);  // Simulate time delay between floors
+                await Task.Delay(500);
 
-                // Update current floor based on direction
                 if (Direction == ElevatorDirection.Up)
                     CurrentFloor++;
-                else
+                else if (Direction == ElevatorDirection.Down)
                     CurrentFloor--;
-
-                // Check if the floor update is correct
                 if (CurrentFloor == targetFloor)
                     break;
             }
 
             Direction = ElevatorDirection.Idle;
-            Console.WriteLine($"Elevator has reached floor {targetFloor} and is now stationary.");
         }
-
         public async Task HandleTransportAsync(int requestedFloor, int targetFloor, int passengerCount)
         {
-            Console.WriteLine("\nMoving to requested floor...");
             await MoveAsync(requestedFloor);
 
             if (passengerCount > 0)
             {
-                Console.WriteLine("\nPicking up passengers...");
                 await PickupPassengers(passengerCount);
             }
 
             if (targetFloor != requestedFloor)
             {
-                Console.WriteLine("\nMoving to target floor...");
                 await MoveAsync(targetFloor);
             }
 
             if (PassengersCount > 0)
             {
-                Console.WriteLine("\nDropping off passengers...");
-                await DropOffPassengers(passengerCount);
+                await DropOffPassengers(passengerCount > 0 ? passengerCount : PassengersCount);
             }
             else
             {
                 Console.WriteLine("\nNo passengers onboard to drop off.");
             }
 
-            Console.WriteLine("\nElevator operation completed.");
+            Direction = ElevatorDirection.Idle;
         }
 
         public void DisplayStatus()
         {
-            int totalWeight = PassengersCount * PassengerWeight;
-            string weightStatus = totalWeight <= WeightLimit ? "Under weight limit" : "Overweight!";
-            Console.WriteLine($"Elevator Type: {ElevatorType}, Floor: {CurrentFloor}, Direction: {Direction}, Passengers: {PassengersCount}/{Constants.MaxPassengers}, Weight: {totalWeight} kg ({weightStatus}), Max Capacity: {WeightLimit} kg");
+            TotalWeight = PassengersCount * PassengerWeight;
+            WeightStatus = TotalWeight <= WeightLimit ? "Under weight limit" : "Overweight!";
+            Console.WriteLine($"Elevator Type: {ElevatorType}, Floor: {CurrentFloor}, Direction: {Direction}, Passengers: {PassengersCount}/{MaxPassengers}, Weight: {TotalWeight} kg ({WeightStatus}), Max Capacity: {WeightLimit} kg");
         }
 
-        // Handle passenger pickup and drop-off
         public Task PickupPassengers(int passengerCount)
         {
             if (CanCarryPassengers(passengerCount))
             {
                 PassengersCount += passengerCount;
-                Console.WriteLine($"{passengerCount} passengers picked up. Total passengers: {PassengersCount}");
+                TotalWeight = PassengersCount * PassengerWeight;
             }
             else
             {
@@ -106,24 +101,24 @@ namespace ElevatorSimulation
             return Task.CompletedTask;
         }
 
-        public Task DropOffPassengers(int passengerCount)
+        public async Task DropOffPassengers(int passengerCount)
         {
             if (passengerCount > PassengersCount)
             {
                 Console.WriteLine("Error: Attempting to drop off more passengers than currently onboard.");
-                return Task.CompletedTask;
+                return;
             }
 
             PassengersCount -= passengerCount;
-            Console.WriteLine($"{passengerCount} passengers dropped off. Remaining: {PassengersCount}");
-            return Task.CompletedTask;
+            TotalWeight = PassengersCount * PassengerWeight;
+
+            await Task.CompletedTask;
         }
 
         public bool CanCarryPassengers(int passengerCount)
         {
-            int totalWeight = (PassengersCount + passengerCount) * PassengerWeight;
-            return (PassengersCount + passengerCount) <= Constants.MaxPassengers && totalWeight <= WeightLimit;
+            TotalWeight = (PassengersCount + passengerCount) * PassengerWeight;
+            return (PassengersCount + passengerCount) <= MaxPassengers && TotalWeight <= WeightLimit;
         }
     }
-
 }
